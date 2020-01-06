@@ -1,0 +1,11 @@
+
+class GameLogic {
+
+  GameLogic() {
+
+  }
+
+  endTurn() {
+
+  }
+}
