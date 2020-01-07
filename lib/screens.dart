@@ -1,4 +1,7 @@
+import 'package:flame/anchor.dart';
 import 'package:flame/components/component.dart';
+import 'package:flame/flame.dart';
+import 'package:flame/sprite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:heroes/game_blocks.dart';
@@ -63,28 +66,47 @@ class GameScreen extends Screen{
 
   BottomBlock bottomBlock;
   Rect leftPlayer;
+  Sprite leftPlayerSprite;
   Rect rightPlayer;
 
   GameScreen(MyGame game) : super(game) {
+    init();
     bgPaint.color = Colors.teal;
 
     bottomBlock = BottomBlock(this, 0, h * 0.7, w, h * 0.3);
-    leftPlayer = Rect.fromLTWH(h * 0.1, h * 0.1, h * 0.4, h * 0.6);
+    leftPlayer = Rect.fromLTWH(h * 0.1, h * 0.1, h * 0.45, h * 0.6);
     rightPlayer = Rect.fromLTWH(w - (h * 0.1 + h * 0.4), h * 0.1, h * 0.4, h * 0.6);
   }
+  var image;
+  init() async {
 
+    image = await Flame.images.load("knight.png");
+    leftPlayerSprite = Sprite.fromImage(image);
+  }
 
   @override
   void render(Canvas c) {
     c.drawRect(bgRect, bgPaint);
-    c.drawRect(leftPlayer, Paint()..color = Colors.orange);
-    c.drawRect(rightPlayer, Paint()..color = Colors.orange);
-
+    leftPlayerSprite.renderRect(c, leftPlayer);
+//    c.drawRect(leftPlayer, Paint()..color = Colors.orange);
+//    c.drawRect(rightPlayer, Paint()..color = Colors.black12);
     bottomBlock.render(c);
+    
+    c.drawRRect(RRect.fromRectAndRadius(rightPlayer, Radius.circular(15.0)), Paint()..color = Colors.orange);
+//    c.drawImageRect(image, rightPlayer, rightPlayer, Paint()..color = Colors.orange);
   }
 
+  var leftMove = true;
   @override
   void update(double t) {
+    if(leftPlayer.height > h * 0.63) {
+      leftMove = false;
+    } else if (leftPlayer.height < h * 0.6){
+      leftMove = true;
+    }
+    leftPlayer = leftMove ? Rect.fromLTWH(leftPlayer.left, leftPlayer.top - 0.15, leftPlayer.width, leftPlayer.height + 0.15)
+        : Rect.fromLTWH(leftPlayer.left, leftPlayer.top + 0.08, leftPlayer.width, leftPlayer.height - 0.08);
+
     bottomBlock.update(t);
   }
 

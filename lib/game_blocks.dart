@@ -16,7 +16,7 @@ class BottomBlock extends Component {
   var secondX, secondY;
   var thirdX, thirdY;
   var fourthX, fourthY;
-
+  var width;
   Rect firstRect, secondRect, thirdRect, fourthRect;
 
   Rect selectedRect;
@@ -25,24 +25,27 @@ class BottomBlock extends Component {
   BottomBlock(this.gameScreen, this.x, this.y, this.w, this.h) {
     cards = Cards.getDefaultCollection();
     firstY = secondY = thirdY = fourthY = y;
-    firstX = h * 0.2;
-    secondX = h + h * 0.2 + firstX;
-    thirdX = h + h * 0.2 + secondX;
-    fourthX = h + h * 0.2 + thirdX;
 
-    firstRect = Rect.fromLTWH(firstX, firstY, h, h);
-    secondRect = Rect.fromLTWH(secondX, secondY, h, h);
-    thirdRect = Rect.fromLTWH(thirdX, thirdY, h, h);
-    fourthRect = Rect.fromLTWH(fourthX, fourthY, h, h);
+    width = h * 0.8;
+
+    firstX = w/2 - width - width - h * 0.025 - h * 0.05;
+    secondX = w/2 - width - h * 0.025;
+    thirdX = w/2 + h * 0.025;
+    fourthX = w/2 + width + h * 0.05 + h * 0.025;
+
+    firstRect = Rect.fromLTWH(firstX, firstY, width, h);
+    secondRect = Rect.fromLTWH(secondX, secondY, width, h);
+    thirdRect = Rect.fromLTWH(thirdX, thirdY, width, h);
+    fourthRect = Rect.fromLTWH(fourthX, fourthY, width, h);
   }
 
   @override
   void render(Canvas c) {
     Paint paint = Paint()..color = Colors.deepPurpleAccent;
-    c.drawRect(firstRect, paint);
-    c.drawRect(secondRect, paint);
-    c.drawRect(thirdRect, paint);
-    c.drawRect(fourthRect, paint);
+    c.drawRRect(RRect.fromRectAndRadius(firstRect, Radius.circular(10)), paint);
+    c.drawRRect(RRect.fromRectAndRadius(secondRect, Radius.circular(10)), paint);
+    c.drawRRect(RRect.fromRectAndRadius(thirdRect, Radius.circular(10)), paint);
+    c.drawRRect(RRect.fromRectAndRadius(fourthRect, Radius.circular(10)), paint);
   }
 
   @override
@@ -57,13 +60,13 @@ class BottomBlock extends Component {
       dy = selectedRect.topLeft.dy + (details.globalPosition.dy - toChangeY);
     }
     if(selected == 1) {
-      firstRect = Rect.fromLTWH(dx, dy, h, h);
+      firstRect = Rect.fromLTWH(dx, dy, width, h);
     } else if(selected == 2) {
-      secondRect = Rect.fromLTWH(dx, dy, h, h);
+      secondRect = Rect.fromLTWH(dx, dy, width, h);
     } else if(selected == 3) {
-      thirdRect = Rect.fromLTWH(dx, dy, h, h);
+      thirdRect = Rect.fromLTWH(dx, dy, width, h);
     } else if(selected == 4) {
-      fourthRect = Rect.fromLTWH(dx, dy, h, h);
+      fourthRect = Rect.fromLTWH(dx, dy, width, h);
     }
   }
 
