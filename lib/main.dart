@@ -8,8 +8,8 @@ import 'package:heroes/screens.dart';
 
 void main() async {
   Util flameUtil = Util();
+  await flameUtil.setOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
   await flameUtil.fullScreen();
-  await flameUtil.setOrientations(List.of([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]));
   var game = MyGame();
   runApp(game.widget);
 

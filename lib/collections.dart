@@ -1,4 +1,6 @@
 
+import 'package:flame/components/component.dart';
+
 class Cards {
   int id;
   String name;

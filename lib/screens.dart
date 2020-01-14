@@ -1,6 +1,7 @@
-import 'package:flame/anchor.dart';
+
 import 'package:flame/components/component.dart';
 import 'package:flame/flame.dart';
+import 'package:flame/position.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -64,10 +65,22 @@ class HomeScreen extends Screen{
  */
 class GameScreen extends Screen{
 
+  // Блок с картами
   BottomBlock bottomBlock;
+
+  // Переменные для отрисовки персонажей
   Rect leftPlayer;
-  Sprite leftPlayerSprite;
   Rect rightPlayer;
+  Sprite leftPlayerSprite;
+  Sprite rightPlayerSprite;
+  SpriteComponent spriteComponent;
+  SpriteComponent rightSpriteComponent;
+
+  // Загрузка спрайтов
+  bool download = true;
+  // Для вижения персонажей
+  bool leftMove = true;
+  bool rightMove = true;
 
   GameScreen(MyGame game) : super(game) {
     init();
@@ -75,37 +88,55 @@ class GameScreen extends Screen{
 
     bottomBlock = BottomBlock(this, 0, h * 0.7, w, h * 0.3);
     leftPlayer = Rect.fromLTWH(h * 0.1, h * 0.1, h * 0.45, h * 0.6);
-    rightPlayer = Rect.fromLTWH(w - (h * 0.1 + h * 0.4), h * 0.1, h * 0.4, h * 0.6);
+    rightPlayer = Rect.fromLTWH(w - (h * 0.1 + h * 0.4), h * 0.1, h * 0.45, h * 0.615);
   }
-  var image;
-  init() async {
 
-    image = await Flame.images.load("knight.png");
-    leftPlayerSprite = Sprite.fromImage(image);
+  // Загрузка
+  init() async {
+    var imageLeft = await Flame.images.load("knight.png");
+    var imageRight = await Flame.images.load("archer.png");
+    leftPlayerSprite = Sprite.fromImage(imageLeft);
+    rightPlayerSprite = Sprite.fromImage(imageRight);
+    spriteComponent = SpriteComponent.fromSprite(rightPlayer.width, rightPlayer.height, rightPlayerSprite);
+    download = false;
   }
 
   @override
   void render(Canvas c) {
-    c.drawRect(bgRect, bgPaint);
-    leftPlayerSprite.renderRect(c, leftPlayer);
-//    c.drawRect(leftPlayer, Paint()..color = Colors.orange);
-//    c.drawRect(rightPlayer, Paint()..color = Colors.black12);
-    bottomBlock.render(c);
-    
-    c.drawRRect(RRect.fromRectAndRadius(rightPlayer, Radius.circular(15.0)), Paint()..color = Colors.orange);
-//    c.drawImageRect(image, rightPlayer, rightPlayer, Paint()..color = Colors.orange);
+    if(!download) {
+      // Задний фон
+      c.drawRect(bgRect, bgPaint);
+      // Левый игрок
+      leftPlayerSprite.renderRect(c, leftPlayer);
+      // Правый игрок
+      spriteComponent.setByRect(rightPlayer);
+      spriteComponent.renderFlipX = true;
+      spriteComponent.render(c);
+      // Блок с картами
+      bottomBlock.render(c);
+    } else {
+      // Нужно будет сделать экран закгрузки здесь
+    }
   }
 
-  var leftMove = true;
   @override
   void update(double t) {
-    if(leftPlayer.height > h * 0.63) {
+    if(leftPlayer.height > h * 0.62) {
       leftMove = false;
     } else if (leftPlayer.height < h * 0.6){
       leftMove = true;
     }
-    leftPlayer = leftMove ? Rect.fromLTWH(leftPlayer.left, leftPlayer.top - 0.15, leftPlayer.width, leftPlayer.height + 0.15)
-        : Rect.fromLTWH(leftPlayer.left, leftPlayer.top + 0.08, leftPlayer.width, leftPlayer.height - 0.08);
+
+    if(rightPlayer.height > h * 0.62) {
+      rightMove = false;
+    } else if (rightPlayer.height < h * 0.6){
+      rightMove = true;
+    }
+
+    leftPlayer = leftMove ? Rect.fromLTWH(leftPlayer.left, leftPlayer.top - 0.10, leftPlayer.width, leftPlayer.height + 0.10)
+        : Rect.fromLTWH(leftPlayer.left, leftPlayer.top + 0.05, leftPlayer.width, leftPlayer.height - 0.05);
+    rightPlayer = rightMove ? Rect.fromLTWH(rightPlayer.left, rightPlayer.top - 0.10, rightPlayer.width, rightPlayer.height + 0.10)
+        : Rect.fromLTWH(rightPlayer.left, rightPlayer.top + 0.05, rightPlayer.width, rightPlayer.height - 0.05);
 
     bottomBlock.update(t);
   }

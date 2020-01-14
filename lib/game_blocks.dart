@@ -18,30 +18,40 @@ class BottomBlock extends Component {
   var fourthX, fourthY;
   var width;
   Rect firstRect, secondRect, thirdRect, fourthRect;
+  Rect firstRectBg, secondRectBg, thirdRectBg, fourthRectBg;
 
   Rect selectedRect;
   var selectedX, selectedY, toChangeX, toChangeY, selected;
+
+  var dragYPosition;
 
   BottomBlock(this.gameScreen, this.x, this.y, this.w, this.h) {
     cards = Cards.getDefaultCollection();
     firstY = secondY = thirdY = fourthY = y;
 
-    width = h * 0.8;
+    width = h * 0.7;
 
     firstX = w/2 - width - width - h * 0.025 - h * 0.05;
     secondX = w/2 - width - h * 0.025;
     thirdX = w/2 + h * 0.025;
     fourthX = w/2 + width + h * 0.05 + h * 0.025;
 
-    firstRect = Rect.fromLTWH(firstX, firstY, width, h);
-    secondRect = Rect.fromLTWH(secondX, secondY, width, h);
-    thirdRect = Rect.fromLTWH(thirdX, thirdY, width, h);
-    fourthRect = Rect.fromLTWH(fourthX, fourthY, width, h);
+    firstRect = firstRectBg =  Rect.fromLTWH(firstX, firstY, width, h * 0.9);
+    secondRect = secondRectBg = Rect.fromLTWH(secondX, secondY, width, h * 0.9);
+    thirdRect = thirdRectBg = Rect.fromLTWH(thirdX, thirdY, width, h * 0.9);
+    fourthRect = fourthRectBg = Rect.fromLTWH(fourthX, fourthY, width, h * 0.9);
   }
 
   @override
   void render(Canvas c) {
     Paint paint = Paint()..color = Colors.deepPurpleAccent;
+    Paint paintBg = Paint()..color = Colors.black26;
+
+    c.drawRRect(RRect.fromRectAndRadius(firstRectBg, Radius.circular(10)), paintBg);
+    c.drawRRect(RRect.fromRectAndRadius(secondRectBg, Radius.circular(10)), paintBg);
+    c.drawRRect(RRect.fromRectAndRadius(thirdRectBg, Radius.circular(10)), paintBg);
+    c.drawRRect(RRect.fromRectAndRadius(fourthRectBg, Radius.circular(10)), paintBg);
+
     c.drawRRect(RRect.fromRectAndRadius(firstRect, Radius.circular(10)), paint);
     c.drawRRect(RRect.fromRectAndRadius(secondRect, Radius.circular(10)), paint);
     c.drawRRect(RRect.fromRectAndRadius(thirdRect, Radius.circular(10)), paint);
@@ -68,6 +78,7 @@ class BottomBlock extends Component {
     } else if(selected == 4) {
       fourthRect = Rect.fromLTWH(dx, dy, width, h);
     }
+    dragYPosition = details.globalPosition.dy;
   }
 
   onTapDown(TapDownDetails details) {
@@ -113,8 +124,33 @@ class BottomBlock extends Component {
     toChangeY = details.globalPosition.dy;
   }
   onEnd(DragEndDetails details) {
+    if(selected != 0) {
+      if(dragYPosition < y) {
+        /*
+         *Выполняем ход!
+         */
+        if(selected == 1) {
+          firstRect = firstRectBg;
+        } else if(selected == 2) {
+          secondRect = secondRectBg;
+        } else if(selected == 3) {
+          thirdRect = thirdRectBg;
+        } else if(selected == 4) {
+          fourthRect = fourthRectBg;
+        }
+      } else {
+        if(selected == 1) {
+          firstRect = firstRectBg;
+        } else if(selected == 2) {
+          secondRect = secondRectBg;
+        } else if(selected == 3) {
+          thirdRect = thirdRectBg;
+        } else if(selected == 4) {
+          fourthRect = fourthRectBg;
+        }
+      }
+    }
     selectedRect = null;
     selected = 0;
   }
-
 }
