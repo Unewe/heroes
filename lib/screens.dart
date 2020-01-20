@@ -1,10 +1,13 @@
 
 import 'package:flame/components/component.dart';
+import 'package:flame/components/text_box_component.dart';
 import 'package:flame/flame.dart';
-import 'package:flame/position.dart';
+import 'package:flame/palette.dart';
 import 'package:flame/sprite.dart';
+import 'package:flame/text_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:heroes/collections.dart';
 import 'package:heroes/game_blocks.dart';
 import 'package:heroes/main.dart';
 
@@ -74,6 +77,7 @@ class GameScreen extends Screen{
   Sprite leftPlayerSprite;
   Sprite rightPlayerSprite;
   SpriteComponent spriteComponent;
+  Rect crutch;
   SpriteComponent rightSpriteComponent;
 
   // Загрузка спрайтов
@@ -88,7 +92,7 @@ class GameScreen extends Screen{
 
     bottomBlock = BottomBlock(this, 0, h * 0.7, w, h * 0.3);
     leftPlayer = Rect.fromLTWH(h * 0.1, h * 0.1, h * 0.45, h * 0.6);
-    rightPlayer = Rect.fromLTWH(w - (h * 0.1 + h * 0.4), h * 0.1, h * 0.45, h * 0.615);
+    rightPlayer = crutch = Rect.fromLTWH(w - (h * 0.1 + h * 0.45), h * 0.1, h * 0.45, h * 0.615);
   }
 
   // Загрузка
@@ -98,6 +102,7 @@ class GameScreen extends Screen{
     leftPlayerSprite = Sprite.fromImage(imageLeft);
     rightPlayerSprite = Sprite.fromImage(imageRight);
     spriteComponent = SpriteComponent.fromSprite(rightPlayer.width, rightPlayer.height, rightPlayerSprite);
+    spriteComponent.renderFlipX = true;
     download = false;
   }
 
@@ -110,9 +115,10 @@ class GameScreen extends Screen{
       leftPlayerSprite.renderRect(c, leftPlayer);
       // Правый игрок
       spriteComponent.setByRect(rightPlayer);
-      spriteComponent.renderFlipX = true;
       spriteComponent.render(c);
+      spriteComponent.prepareCanvas(c);
       // Блок с картами
+      c.translate(0, - spriteComponent.y * 2);
       bottomBlock.render(c);
     } else {
       // Нужно будет сделать экран закгрузки здесь
@@ -139,6 +145,14 @@ class GameScreen extends Screen{
         : Rect.fromLTWH(rightPlayer.left, rightPlayer.top + 0.05, rightPlayer.width, rightPlayer.height - 0.05);
 
     bottomBlock.update(t);
+  }
+
+  cardAction(Cards cards) {
+    print(cards.getDescription());
+  }
+
+  endTurn() {
+
   }
 
   @override

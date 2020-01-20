@@ -12,17 +12,17 @@ class Cards {
   String getDescription() {
     switch (feature) {
       case Features.meleeDefault:
-        return "Наносит ${this.dmgLow} - ${this.dmgHigh} урона";
+        return "Наносит ${(this.dmgLow).floor()} - ${(this.dmgHigh).floor()} урона";
       case Features.rangedDefault:
-        return "С верояьность ${this.chance * 100}% нанесет ${this.dmgLow} урона.";
+        return "С верояьность ${(this.chance * 100).floor()}% нанесет ${(this.dmgLow).floor()} урона.";
       case Features.shieldDefault:
-        return "Вы получите ${this.dmgLow} брони.";
+        return "Вы получите ${(this.dmgLow).floor()} брони.";
       case Features.prepareDefault:
         return "Вы получите 1 очко инициативы, и 1 дополнительную катру.";
       case Features.curseDefault:
-        return "Добавляет 2 катты проклятия в колоду противника.";
+        return "Добавляет 2 карты проклятия в колоду противника.";
       case Features.improvementDefault:
-        return "Ваша следующая атака улучшена на ${this.chance}%";
+        return "Ваша следующая атака улучшена на ${(this.chance).floor()}%";
       default: return "";
     }
   }
@@ -63,6 +63,13 @@ class Cards {
   static Cards defaultImprovementCard() {
     return Cards(6, "Улучшение", 0.5, 1, 1, Features.improvementDefault);
   }
+
+  @override
+  String toString() {
+    return 'Cards{name: $name}';
+  }
+
+
 }
 
 enum Features {
