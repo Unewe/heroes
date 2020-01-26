@@ -1,14 +1,12 @@
 
 import 'package:flame/components/component.dart';
-import 'package:flame/components/text_box_component.dart';
 import 'package:flame/flame.dart';
-import 'package:flame/palette.dart';
 import 'package:flame/sprite.dart';
-import 'package:flame/text_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:heroes/collections.dart';
 import 'package:heroes/game_blocks.dart';
+import 'package:heroes/game_logic.dart';
 import 'package:heroes/main.dart';
 
 abstract class Screen extends Component {
@@ -22,6 +20,7 @@ abstract class Screen extends Component {
     bgRect = Rect.fromLTWH(0, 0, w, h);
     bgPaint = Paint()..color = Colors.green;
   }
+
   onVerticalUpdate(DragUpdateDetails details) {}
   onTapDown(TapDownDetails details) {}
   onTapUp(TapUpDetails details) {}
@@ -68,41 +67,38 @@ class HomeScreen extends Screen{
  */
 class GameScreen extends Screen{
 
+  GameLogic gameLogic;
   // Блок с картами
   BottomBlock bottomBlock;
 
-  // Переменные для отрисовки персонажей
-  Rect leftPlayer;
-  Rect rightPlayer;
   Sprite leftPlayerSprite;
   Sprite rightPlayerSprite;
-  SpriteComponent spriteComponent;
-  Rect crutch;
   SpriteComponent rightSpriteComponent;
 
   // Загрузка спрайтов
   bool download = true;
-  // Для вижения персонажей
-  bool leftMove = true;
-  bool rightMove = true;
+
+  // Персонажи
+  PlayerBlock leftPlayerBlock;
+  PlayerBlock rightPlayerBlock;
 
   GameScreen(MyGame game) : super(game) {
     init();
     bgPaint.color = Colors.teal;
-
     bottomBlock = BottomBlock(this, 0, h * 0.7, w, h * 0.3);
-    leftPlayer = Rect.fromLTWH(h * 0.1, h * 0.1, h * 0.45, h * 0.6);
-    rightPlayer = crutch = Rect.fromLTWH(w - (h * 0.1 + h * 0.45), h * 0.1, h * 0.45, h * 0.615);
   }
 
   // Загрузка
   init() async {
+
+    gameLogic = GameLogic(Player("Left", PlayerClass.DEFAULT), Player("right", PlayerClass.DEFAULT), this);
+
     var imageLeft = await Flame.images.load("knight.png");
     var imageRight = await Flame.images.load("archer.png");
     leftPlayerSprite = Sprite.fromImage(imageLeft);
+    leftPlayerBlock = PlayerBlock(this, leftPlayerSprite, false);
     rightPlayerSprite = Sprite.fromImage(imageRight);
-    spriteComponent = SpriteComponent.fromSprite(rightPlayer.width, rightPlayer.height, rightPlayerSprite);
-    spriteComponent.renderFlipX = true;
+    rightPlayerBlock = PlayerBlock(this, rightPlayerSprite, true);
     download = false;
   }
 
@@ -112,13 +108,10 @@ class GameScreen extends Screen{
       // Задний фон
       c.drawRect(bgRect, bgPaint);
       // Левый игрок
-      leftPlayerSprite.renderRect(c, leftPlayer);
+      leftPlayerBlock.render(c);
       // Правый игрок
-      spriteComponent.setByRect(rightPlayer);
-      spriteComponent.render(c);
-      spriteComponent.prepareCanvas(c);
-      // Блок с картами
-      c.translate(0, - spriteComponent.y * 2);
+      rightPlayerBlock.render(c);
+      // НижнийБлок
       bottomBlock.render(c);
     } else {
       // Нужно будет сделать экран закгрузки здесь
@@ -127,28 +120,17 @@ class GameScreen extends Screen{
 
   @override
   void update(double t) {
-    if(leftPlayer.height > h * 0.62) {
-      leftMove = false;
-    } else if (leftPlayer.height < h * 0.6){
-      leftMove = true;
+    if(!download) {
+      leftPlayerBlock.update(t);
+      rightPlayerBlock.update(t);
+
+      bottomBlock.update(t);
     }
-
-    if(rightPlayer.height > h * 0.62) {
-      rightMove = false;
-    } else if (rightPlayer.height < h * 0.6){
-      rightMove = true;
-    }
-
-    leftPlayer = leftMove ? Rect.fromLTWH(leftPlayer.left, leftPlayer.top - 0.10, leftPlayer.width, leftPlayer.height + 0.10)
-        : Rect.fromLTWH(leftPlayer.left, leftPlayer.top + 0.05, leftPlayer.width, leftPlayer.height - 0.05);
-    rightPlayer = rightMove ? Rect.fromLTWH(rightPlayer.left, rightPlayer.top - 0.10, rightPlayer.width, rightPlayer.height + 0.10)
-        : Rect.fromLTWH(rightPlayer.left, rightPlayer.top + 0.05, rightPlayer.width, rightPlayer.height - 0.05);
-
-    bottomBlock.update(t);
   }
 
-  cardAction(Cards cards) {
-    print(cards.getDescription());
+  cardAction(Cards card) {
+    gameLogic.dropCard(card);
+    print(card.getDescription());
   }
 
   endTurn() {
@@ -197,6 +179,70 @@ class ShopScreen extends Screen{
   @override
   void update(double t) {
     // TODO: implement update
+  }
+}
+
+
+/*
+ * playerBlock
+ */
+class PlayerBlock extends PositionComponent {
+  GameScreen screen;
+  Sprite sprite;
+  Rect rect;
+  bool upBreath = false;
+  bool rightPlayer = false;
+
+  Rect healthBorder;
+  Rect health;
+
+  Player player;
+
+  double defaultHealthLineLength;
+  int previousHealth, defaultHealth;
+
+  PlayerBlock(this.screen, this.sprite, this.rightPlayer) {
+    rect = Rect.fromLTWH(screen.h * 0.1, screen.h * 0.1, screen.h * 0.45, rightPlayer ? screen.h * 0.6 : screen.h * 0.61 );
+    healthBorder = Rect.fromLTWH(screen.h * 0.1, screen.h * 0.01, screen.h * 0.45, screen.h * 0.08);
+    health = Rect.fromLTWH(screen.h * 0.11, screen.h * 0.02, screen.h * 0.43, screen.h * 0.06);
+    this.player = rightPlayer ? screen.gameLogic.rightPlayer : screen.gameLogic.leftPlayer;
+    previousHealth = defaultHealth = player.getHealth();
+    defaultHealthLineLength = screen.h * 0.43;
+  }
+
+  @override
+  void render(Canvas canvas) {
+
+    if(rightPlayer) {
+      canvas.translate(screen.w, 0);
+      canvas.scale(-1.0, 1.0);
+    }
+
+    canvas.drawRect(healthBorder, Paint()..color = Colors.black);
+    canvas.drawRect(health, Paint()..color = Colors.red);
+    sprite.renderRect(canvas, rect);
+
+    if(rightPlayer) {
+      canvas.translate(screen.w, 0);
+      canvas.scale(-1.0, 1.0);
+    }
+  }
+
+  @override
+  void update(double t) {
+    if(previousHealth != player.getHealth()) {
+      health = Rect.fromLTWH(screen.h * 0.11, screen.h * 0.02, defaultHealthLineLength * (player.getHealth() / (defaultHealth / 100) / 100), screen.h * 0.06);
+      previousHealth = player.getHealth();
+    }
+
+    if(rect.height > screen.h * 0.62) {
+      upBreath = false;
+    } else if (rect.height < screen.h * 0.6){
+      upBreath = true;
+    }
+
+    rect = upBreath ? Rect.fromLTWH(rect.left, rect.top - 0.10, rect.width, rect.height + 0.10)
+        : Rect.fromLTWH(rect.left, rect.top + 0.05, rect.width, rect.height - 0.05);
   }
 
 }

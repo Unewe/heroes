@@ -1,6 +1,3 @@
-
-import 'package:flame/components/component.dart';
-
 class Cards {
   int id;
   String name;
@@ -18,11 +15,11 @@ class Cards {
       case Features.shieldDefault:
         return "Вы получите ${(this.dmgLow).floor()} брони.";
       case Features.prepareDefault:
-        return "Вы получите 1 очко инициативы, и 1 дополнительную катру.";
+        return "Вы получите 1 очко инициативы, и 1 карту на выбор.";
       case Features.curseDefault:
         return "Добавляет 2 карты проклятия в колоду противника.";
       case Features.improvementDefault:
-        return "Ваша следующая атака улучшена на ${(this.chance).floor()}%";
+        return "Ваша следующая атака улучшена на ${(this.chance * 100).floor()}%";
       default: return "";
     }
   }
@@ -49,7 +46,7 @@ class Cards {
   }
 
   static Cards defaultShieldCard() {
-    return Cards(3, "Щит", 1, 10, 10, Features.shieldDefault);
+    return Cards(3, "Щит", 1, 8, 12, Features.shieldDefault);
   }
 
   static Cards defaultPrepareCard() {
@@ -68,6 +65,16 @@ class Cards {
   String toString() {
     return 'Cards{name: $name}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Cards &&
+              runtimeType == other.runtimeType &&
+              id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 
 
 }

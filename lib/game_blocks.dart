@@ -77,46 +77,46 @@ class BottomBlock extends Component {
 
     if(firstRect != null) {
       firstTextBox
-        ..anchor = Anchor.topCenter
-        ..x = firstRect.topCenter.dx
-        ..y = firstRect.topCenter.dy
+        ..anchor = Anchor.topLeft
+        ..x = firstRect.topLeft.dx
+        ..y = firstRect.topLeft.dy
         ..update(0)
         ..render(c);
-      c.translate(-firstRect.topCenter.dx + firstTextBox.width / 2,
-          -firstRect.topCenter.dy);
+      c.translate(-firstRect.topLeft.dx,
+          -firstRect.topLeft.dy);
     }
 
     if(secondRect != null) {
       secondTextBox
-        ..anchor = Anchor.topCenter
-        ..x = secondRect.topCenter.dx
-        ..y = secondRect.topCenter.dy
+        ..anchor = Anchor.topLeft
+        ..x = secondRect.topLeft.dx
+        ..y = secondRect.topLeft.dy
         ..update(0)
         ..render(c);
-      c.translate(-secondRect.topCenter.dx + secondTextBox.width / 2,
-          -secondRect.topCenter.dy);
+      c.translate(-secondRect.topLeft.dx,
+          -secondRect.topLeft.dy);
     }
 
     if(thirdRect != null) {
       thirdTextBox
-        ..anchor = Anchor.topCenter
-        ..x = thirdRect.topCenter.dx
-        ..y = thirdRect.topCenter.dy
+        ..anchor = Anchor.topLeft
+        ..x = thirdRect.topLeft.dx
+        ..y = thirdRect.topLeft.dy
         ..update(0)
         ..render(c);
-      c.translate(-thirdRect.topCenter.dx + thirdRect.width / 2,
-          -thirdRect.topCenter.dy);
+      c.translate(-thirdRect.topLeft.dx,
+          -thirdRect.topLeft.dy);
     }
 
     if(fourthRect != null) {
       fourthTextBox
-        ..anchor = Anchor.topCenter
-        ..x = fourthRect.topCenter.dx
-        ..y = fourthRect.topCenter.dy
+        ..anchor = Anchor.topLeft
+        ..x = fourthRect.topLeft.dx
+        ..y = fourthRect.topLeft.dy
         ..update(0)
         ..render(c);
-      c.translate(-fourthRect.topCenter.dx + fourthTextBox.width / 2,
-          -fourthRect.topCenter.dy);
+      c.translate(-fourthRect.topLeft.dx,
+          -fourthRect.topLeft.dy);
     }
   }
 
@@ -222,15 +222,18 @@ class BottomBlock extends Component {
   }
 
   List<Cards> drawCards() {
+    List<Cards> temp = List.of(cards);
     List<Cards> list = List();
     for(int i = 0; i < 5; i++) {
-      list.add(cards.elementAt(random.nextInt(cards.length)));
+      int value = random.nextInt(temp.length);
+      list.add(temp.elementAt(value));
+      temp.removeAt(value);
     }
     return list;
   }
 }
 
-class Player extends PositionComponent {
+class PlayerView extends PositionComponent {
   @override
   void render(Canvas c) {
     // TODO: implement render
@@ -240,7 +243,6 @@ class Player extends PositionComponent {
   void update(double t) {
     // TODO: implement update
   }
-
 }
 
 class CardItem {
@@ -265,7 +267,7 @@ class CardTextBox extends TextBoxComponent {
 
   CardTextBox(String text, this.rect)
       : super(text,
-      config: TextConfig(fontSize: 10.0, fontFamily: 'Awesome Font', color: Colors.white), boxConfig: TextBoxConfig(maxWidth: rect.width, margin: 10));
+      config: TextConfig(fontSize: 10.0, fontFamily: 'Awesome Font', color: Colors.white), boxConfig: TextBoxConfig(maxWidth: rect.width, margin: 15));
 
   @override
   void drawBackground(Canvas c) {
