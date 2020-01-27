@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:heroes/collections.dart';
+import 'package:heroes/game_blocks.dart';
 import 'package:heroes/screens.dart';
 
 class GameLogic {
@@ -39,9 +40,21 @@ class GameLogic {
     switch (card.feature) {
 
       case Features.meleeDefault:
+        if(current.getImprovements().length > 0) {
+          current.getImprovements().forEach((improvement) =>
+            dmg = dmg + (dmg * improvement.dmgHigh).round()
+          );
+        }
+        current._improvements.clear();
         opponent.hit(dmg);
         break;
       case Features.rangedDefault:
+        if(current.getImprovements().length > 0) {
+          current.getImprovements().forEach((improvement) =>
+          dmg = dmg + (dmg * improvement.dmgHigh).round()
+          );
+        }
+        current._improvements.clear();
         opponent.hit(dmg);
         break;
       case Features.shieldDefault:
@@ -49,9 +62,38 @@ class GameLogic {
         break;
       case Features.prepareDefault:
         if(current.initiative < 10) current.initiative++;
+
+        //Кладем карту если есть пустое место
+        int rndIndex = random.nextInt(current.currentTurnCards.length);
+        if (this.gameScreen.bottomBlock.firstRect == null) {
+          this.gameScreen.bottomBlock.currentCards
+              .replaceRange(0, 1, List.of([current.currentTurnCards.elementAt(rndIndex)]));
+          this.current.currentTurnCards.removeAt(rndIndex);
+          this.gameScreen.bottomBlock.firstRect = this.gameScreen.bottomBlock.firstRectBg;
+        } else if (this.gameScreen.bottomBlock.secondRect == null) {
+          this.gameScreen.bottomBlock.currentCards
+              .replaceRange(1, 2, List.of([current.currentTurnCards.elementAt(rndIndex)]));
+          this.current.currentTurnCards.removeAt(rndIndex);
+          this.gameScreen.bottomBlock.secondRect = this.gameScreen.bottomBlock.secondRectBg;
+        } else if (this.gameScreen.bottomBlock.thirdRect == null) {
+          this.gameScreen.bottomBlock.currentCards
+              .replaceRange(2, 3, List.of([current.currentTurnCards.elementAt(rndIndex)]));
+          this.current.currentTurnCards.removeAt(rndIndex);
+          this.gameScreen.bottomBlock.thirdRect = this.gameScreen.bottomBlock.thirdRectBg;
+        } else if (this.gameScreen.bottomBlock.fourthRect == null) {
+          this.gameScreen.bottomBlock.currentCards
+              .replaceRange(3, 4, List.of([current.currentTurnCards.elementAt(rndIndex)]));
+          this.current.currentTurnCards.removeAt(rndIndex);
+          this.gameScreen.bottomBlock.fourthRect = this.gameScreen.bottomBlock.fourthRectBg;
+        }
+        this.gameScreen.bottomBlock.initCards();
         break;
       case Features.curseDefault:
-        opponent.addDegradation(card);
+        opponent.cards.add(Cards.simpleCurse());
+        opponent.cards.add(Cards.simpleCurse());
+        break;
+      case Features.simpleCurse:
+        current.cards.removeAt(current.cards.indexOf(card));
         break;
       case Features.improvementDefault:
         current.addImprovement(card);
@@ -92,6 +134,7 @@ class Player {
   int initiative;
 
   List<Cards> cards;
+  List<Cards> currentTurnCards;
 
   Player(this.name, this.playerClass) {
     switch (playerClass) {
@@ -158,7 +201,7 @@ class Player {
     this._improvements.add(improvement);
   }
 
-  getImprovements() {
+  List<Cards> getImprovements() {
     return this._improvements;
   }
 
@@ -166,7 +209,7 @@ class Player {
     this._degradations.add(degradation);
   }
 
-  getDegradations() {
+  List<Cards> getDegradations() {
     return this._degradations;
   }
 

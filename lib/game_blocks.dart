@@ -16,7 +16,6 @@ class BottomBlock extends Component {
   GameScreen gameScreen;
 
   var x, y, w, h;
-  List<Cards> cards;
   List<Cards> currentCards;
 
   var firstX, firstY;
@@ -35,7 +34,6 @@ class BottomBlock extends Component {
   CardTextBox firstTextBox, secondTextBox, thirdTextBox, fourthTextBox;
 
   BottomBlock(this.gameScreen, this.x, this.y, this.w, this.h) {
-    cards = Cards.getDefaultCollection();
     currentCards = drawCards();
 
     firstY = secondY = thirdY = fourthY = y;
@@ -51,12 +49,14 @@ class BottomBlock extends Component {
     secondRect = secondRectBg = Rect.fromLTWH(secondX, secondY, width, h * 0.9);
     thirdRect = thirdRectBg = Rect.fromLTWH(thirdX, thirdY, width, h * 0.9);
     fourthRect = fourthRectBg = Rect.fromLTWH(fourthX, fourthY, width, h * 0.9);
+    initCards();
+  }
 
-
-    firstTextBox = CardTextBox(currentCards.elementAt(0).getDescription(), firstRect);
-    secondTextBox = CardTextBox(currentCards.elementAt(1).getDescription(), secondRect);
-    thirdTextBox = CardTextBox(currentCards.elementAt(2).getDescription(), thirdRect);
-    fourthTextBox = CardTextBox(currentCards.elementAt(3).getDescription(), fourthRect);
+  initCards() {
+    if(firstRect != null) firstTextBox = CardTextBox(currentCards.elementAt(0).getDescription(), firstRect);
+    if(secondRect != null) secondTextBox = CardTextBox(currentCards.elementAt(1).getDescription(), secondRect);
+    if(thirdRect != null) thirdTextBox = CardTextBox(currentCards.elementAt(2).getDescription(), thirdRect);
+    if(fourthRect != null) fourthTextBox = CardTextBox(currentCards.elementAt(3).getDescription(), fourthRect);
   }
 
   @override
@@ -193,17 +193,17 @@ class BottomBlock extends Component {
          *Выполняем ход!
          */
         if(selected == 0) {
-          gameScreen.cardAction(currentCards.elementAt(0));
           firstRect = null;
+          gameScreen.cardAction(currentCards.elementAt(0));
         } else if(selected == 1) {
-          gameScreen.cardAction(currentCards.elementAt(1));
           secondRect = null;
+          gameScreen.cardAction(currentCards.elementAt(1));
         } else if(selected == 2) {
-          gameScreen.cardAction(currentCards.elementAt(2));
           thirdRect = null;
+          gameScreen.cardAction(currentCards.elementAt(2));
         } else if(selected == 3) {
-          gameScreen.cardAction(currentCards.elementAt(3));
           fourthRect = null;
+          gameScreen.cardAction(currentCards.elementAt(3));
         }
       } else {
         if(selected == 0) {
@@ -222,12 +222,12 @@ class BottomBlock extends Component {
   }
 
   List<Cards> drawCards() {
-    List<Cards> temp = List.of(cards);
+    this.gameScreen.gameLogic.current.currentTurnCards = List.of(this.gameScreen.gameLogic.current.cards);
     List<Cards> list = List();
     for(int i = 0; i < 5; i++) {
-      int value = random.nextInt(temp.length);
-      list.add(temp.elementAt(value));
-      temp.removeAt(value);
+      int value = random.nextInt(this.gameScreen.gameLogic.current.currentTurnCards.length);
+      list.add(this.gameScreen.gameLogic.current.currentTurnCards.elementAt(value));
+      this.gameScreen.gameLogic.current.currentTurnCards.removeAt(value);
     }
     return list;
   }

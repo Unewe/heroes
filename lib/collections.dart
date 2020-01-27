@@ -16,8 +16,12 @@ class Cards {
         return "Вы получите ${(this.dmgLow).floor()} брони.";
       case Features.prepareDefault:
         return "Вы получите 1 очко инициативы, и 1 карту на выбор.";
+
       case Features.curseDefault:
         return "Добавляет 2 карты проклятия в колоду противника.";
+      case Features.simpleCurse:
+        return "Жалкое проклятие. Просто выбросите и играйте дальше";
+
       case Features.improvementDefault:
         return "Ваша следующая атака улучшена на ${(this.chance * 100).floor()}%";
       default: return "";
@@ -57,6 +61,10 @@ class Cards {
     return Cards(5, "Проклятие", 1, 1, 1, Features.curseDefault);
   }
 
+  static Cards simpleCurse() {
+    return Cards(5, "Простое проклятие", 1, 1, 1, Features.simpleCurse);
+  }
+
   static Cards defaultImprovementCard() {
     return Cards(6, "Улучшение", 0.5, 1, 1, Features.improvementDefault);
   }
@@ -84,6 +92,9 @@ enum Features {
   rangedDefault,
   shieldDefault,
   prepareDefault,
+  //Проклятие.
   curseDefault,
+  simpleCurse,
+  //Улучшение.
   improvementDefault
 }
