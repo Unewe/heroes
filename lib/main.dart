@@ -6,7 +6,7 @@ import 'package:flame/util.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:heroes/screens.dart';
+import 'package:madlegend/screens.dart';
 
 void main() async {
   Util flameUtil = Util();

@@ -6,8 +6,8 @@ import 'package:flame/components/component.dart';
 import 'package:flame/components/text_box_component.dart';
 import 'package:flame/text_config.dart';
 import 'package:flutter/material.dart';
-import 'package:heroes/collections.dart';
-import 'package:heroes/screens.dart';
+import 'package:madlegend/collections.dart';
+import 'package:madlegend/screens.dart';
 
 class BottomBlock extends Component {
 
@@ -34,8 +34,6 @@ class BottomBlock extends Component {
   CardTextBox firstTextBox, secondTextBox, thirdTextBox, fourthTextBox;
 
   BottomBlock(this.gameScreen, this.x, this.y, this.w, this.h) {
-    currentCards = drawCards();
-
     firstY = secondY = thirdY = fourthY = y;
 
     width = h * 0.7;
@@ -49,14 +47,25 @@ class BottomBlock extends Component {
     secondRect = secondRectBg = Rect.fromLTWH(secondX, secondY, width, h * 0.9);
     thirdRect = thirdRectBg = Rect.fromLTWH(thirdX, thirdY, width, h * 0.9);
     fourthRect = fourthRectBg = Rect.fromLTWH(fourthX, fourthY, width, h * 0.9);
+    currentCards = drawCards();
     initCards();
   }
 
   initCards() {
+
     if(firstRect != null) firstTextBox = CardTextBox(currentCards.elementAt(0).getDescription(), firstRect);
     if(secondRect != null) secondTextBox = CardTextBox(currentCards.elementAt(1).getDescription(), secondRect);
     if(thirdRect != null) thirdTextBox = CardTextBox(currentCards.elementAt(2).getDescription(), thirdRect);
     if(fourthRect != null) fourthTextBox = CardTextBox(currentCards.elementAt(3).getDescription(), fourthRect);
+  }
+
+  initCardsFully() {
+    firstRect = firstRectBg;
+    secondRect = secondRectBg;
+    thirdRect = thirdRectBg;
+    fourthRect = fourthRectBg;
+    currentCards = drawCards();
+    initCards();
   }
 
   @override

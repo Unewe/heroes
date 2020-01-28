@@ -1,8 +1,7 @@
 import 'dart:math';
 
-import 'package:heroes/collections.dart';
-import 'package:heroes/game_blocks.dart';
-import 'package:heroes/screens.dart';
+import 'package:madlegend/screens.dart';
+import 'package:madlegend/collections.dart';
 
 class GameLogic {
   GameScreen gameScreen;
@@ -62,7 +61,6 @@ class GameLogic {
         break;
       case Features.prepareDefault:
         if(current.initiative < 10) current.initiative++;
-
         //Кладем карту если есть пустое место
         int rndIndex = random.nextInt(current.currentTurnCards.length);
         if (this.gameScreen.bottomBlock.firstRect == null) {
@@ -102,7 +100,17 @@ class GameLogic {
   }
 
   endTurn() {
-    
+    Player tmp = current;
+    current = opponent;
+    opponent = tmp;
+    current.currentTurnCards = List.of(current.cards);
+    opponent.currentTurnCards = List.of(opponent.cards);
+
+    if(current == rightPlayer) {
+      cpuTurn();
+    } else {
+      gameScreen.bottomBlock.initCardsFully();
+    }
   }
   
   lastWord(Player player) {
@@ -119,6 +127,37 @@ class GameLogic {
 
   getCurrentCards() {
     return current.cards;
+  }
+
+  cpuTurn() {
+    List<Cards> cpuHand = List();
+    for(int i = 0; i < 5; i++) {
+      int value = random.nextInt(current.currentTurnCards.length);
+      cpuHand.add(current.currentTurnCards.elementAt(value));
+      current.currentTurnCards.removeAt(value);
+    }
+    print(cpuHand.toString());
+    for(int i = 0; i <= 5; i++) {
+      
+      if(cpuHand.contains(Cards.simpleCurse())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.simpleCurse())));
+      } else if(cpuHand.contains(Cards.defaultImprovementCard())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultImprovementCard())));
+      } else if(cpuHand.contains(Cards.defaultShieldCard())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultShieldCard())));
+      } else if(cpuHand.contains(Cards.defaultPrepareCard())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultPrepareCard())));
+      } else if(cpuHand.contains(Cards.defaultMeleeCard())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultMeleeCard())));
+      } else if(cpuHand.contains(Cards.defaultRangedCard())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultRangedCard())));
+      } else if(cpuHand.contains(Cards.defaultCurseCard())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultCurseCard())));
+      }
+
+    }
+
+    endTurn();
   }
 }
 

@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:heroes/main.dart';
+import 'package:madlegend/main.dart';
 
 void main() {
 

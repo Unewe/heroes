@@ -1,13 +1,17 @@
 
+import 'package:flame/anchor.dart';
 import 'package:flame/components/component.dart';
+import 'package:flame/components/text_component.dart';
 import 'package:flame/flame.dart';
+import 'package:flame/palette.dart';
 import 'package:flame/sprite.dart';
+import 'package:flame/text_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:heroes/collections.dart';
-import 'package:heroes/game_blocks.dart';
-import 'package:heroes/game_logic.dart';
-import 'package:heroes/main.dart';
+import 'package:madlegend/collections.dart';
+import 'package:madlegend/game_blocks.dart';
+import 'package:madlegend/game_logic.dart';
+import 'package:madlegend/main.dart';
 
 abstract class Screen extends Component {
   var w,h;
@@ -82,6 +86,8 @@ class GameScreen extends Screen{
   PlayerBlock leftPlayerBlock;
   PlayerBlock rightPlayerBlock;
 
+  Rect endTurnButton;
+
   GameScreen(MyGame game) : super(game) {
     init();
     bgPaint.color = Colors.teal;
@@ -92,6 +98,10 @@ class GameScreen extends Screen{
   init() async {
 
     gameLogic = GameLogic(Player("Left", PlayerClass.DEFAULT), Player("right", PlayerClass.DEFAULT), this);
+    endTurnButton = Rect.fromLTWH(
+        w - h * 0.05 - w * 0.1,
+        h - h * 0.05 - h * 0.1,
+        w * 0.1, h * 0.1);
 
     var imageLeft = await Flame.images.load("knight.png");
     var imageRight = await Flame.images.load("archer.png");
@@ -107,6 +117,7 @@ class GameScreen extends Screen{
     if(!download) {
       // Задний фон
       c.drawRect(bgRect, bgPaint);
+      c.drawRect(endTurnButton, Paint()..color = Colors.deepPurpleAccent);
       // Левый игрок
       leftPlayerBlock.render(c);
       // Правый игрок
@@ -134,7 +145,7 @@ class GameScreen extends Screen{
   }
 
   endTurn() {
-
+    gameLogic.endTurn();
   }
 
   @override
@@ -145,6 +156,10 @@ class GameScreen extends Screen{
   @override
   onTapDown(TapDownDetails details) {
     bottomBlock.onTapDown(details);
+
+    if(endTurnButton.contains(details.globalPosition)) {
+      endTurn();
+    }
   }
 
   @override
@@ -196,6 +211,9 @@ class PlayerBlock extends PositionComponent {
   Rect healthBorder;
   Rect health;
 
+  TextComponent healthText;
+  TextComponent shield;
+
   Player player;
 
   double defaultHealthLineLength;
@@ -208,11 +226,14 @@ class PlayerBlock extends PositionComponent {
     this.player = rightPlayer ? screen.gameLogic.rightPlayer : screen.gameLogic.leftPlayer;
     previousHealth = defaultHealth = player.getHealth();
     defaultHealthLineLength = screen.h * 0.43;
+    shield = TextComponent("", config: TextConfig(color: BasicPalette.white.color))
+      ..anchor = Anchor.topLeft;
+    healthText = TextComponent("", config: TextConfig(color: BasicPalette.white.color))
+      ..anchor = Anchor.topLeft;
   }
 
   @override
   void render(Canvas canvas) {
-
     if(rightPlayer) {
       canvas.translate(screen.w, 0);
       canvas.scale(-1.0, 1.0);
@@ -225,6 +246,36 @@ class PlayerBlock extends PositionComponent {
     if(rightPlayer) {
       canvas.translate(screen.w, 0);
       canvas.scale(-1.0, 1.0);
+    }
+
+    if(rightPlayer) {
+      healthText
+        ..text = player.getHealth().toString()
+        ..x = screen.w - screen.h * 0.1 - screen.h * 0.25
+        ..y = screen.h * 0.02;
+      healthText.render(canvas);
+      canvas.translate(-screen.w + screen.h * 0.1 + screen.h * 0.25, -screen.h * 0.02);
+
+      shield
+        ..text = "+${player.getShield()}"
+        ..x = screen.w - screen.h * 0.1 - screen.h * 0.58
+        ..y = screen.h * 0.02;
+      shield.render(canvas);
+      canvas.translate(-screen.w + screen.h * 0.1 + screen.h * 0.58, -screen.h * 0.02);
+    } else {
+      healthText
+        ..text = player.getHealth().toString()
+        ..x = screen.h * 0.29
+        ..y = screen.h * 0.02;
+      healthText.render(canvas);
+      canvas.translate(-screen.h * 0.29, -screen.h * 0.02);
+
+      shield
+        ..text = "+${player.getShield()}"
+        ..x = screen.h * 0.6
+        ..y = screen.h * 0.02;
+      shield.render(canvas);
+      canvas.translate(-screen.h * 0.6, -screen.h * 0.02);
     }
   }
 
