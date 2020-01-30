@@ -36,6 +36,18 @@ class GameLogic {
       dmg = random.nextInt(card.dmgHigh - card.dmgLow + 1) + card.dmgLow;
     }
 
+    switch(card.costType) {
+
+      case Cost.initiative:
+        current.initiative -= card.costCount;
+        break;
+      case Cost.health:
+        current._health -= card.costCount;
+        break;
+      case Cost.noCost:
+        break;
+    }
+
     switch (card.feature) {
 
       case Features.meleeDefault:
@@ -97,6 +109,14 @@ class GameLogic {
         current.addImprovement(card);
         break;
     }
+
+    if(leftPlayer.getHealth() <= 0 && rightPlayer.getHealth() <= 0) {
+      draw();
+    } else if(leftPlayer.getHealth() <= 0) {
+      endGame(leftPlayer);
+    } else if(rightPlayer.getHealth() <= 0) {
+      endGame(rightPlayer);
+    }
   }
 
   endTurn() {
@@ -105,6 +125,8 @@ class GameLogic {
     opponent = tmp;
     current.currentTurnCards = List.of(current.cards);
     opponent.currentTurnCards = List.of(opponent.cards);
+
+    current.initiative = 2;
 
     if(current == rightPlayer) {
       cpuTurn();
@@ -119,6 +141,7 @@ class GameLogic {
 
   endGame(Player player) {
     print("Игрок ${player.name} проиграл!");
+    gameScreen.game.toScreen(HomeScreen(gameScreen.game));
   }
 
   draw() {
@@ -139,25 +162,42 @@ class GameLogic {
     print(cpuHand.toString());
     for(int i = 0; i <= 5; i++) {
       
-      if(cpuHand.contains(Cards.simpleCurse())) {
+      if(cpuHand.contains(Cards.simpleCurse()) && _isEnough(Cards.simpleCurse())) {
         dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.simpleCurse())));
-      } else if(cpuHand.contains(Cards.defaultImprovementCard())) {
+      } else if(cpuHand.contains(Cards.defaultImprovementCard()) && _isEnough(Cards.defaultImprovementCard())) {
         dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultImprovementCard())));
-      } else if(cpuHand.contains(Cards.defaultShieldCard())) {
-        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultShieldCard())));
-      } else if(cpuHand.contains(Cards.defaultPrepareCard())) {
+      } else if(cpuHand.contains(Cards.defaultPrepareCard()) && _isEnough(Cards.defaultPrepareCard())) {
         dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultPrepareCard())));
-      } else if(cpuHand.contains(Cards.defaultMeleeCard())) {
+      } else if(cpuHand.contains(Cards.defaultMeleeCard()) && _isEnough(Cards.defaultMeleeCard())) {
         dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultMeleeCard())));
-      } else if(cpuHand.contains(Cards.defaultRangedCard())) {
+      } else if(cpuHand.contains(Cards.defaultRangedCard()) && _isEnough(Cards.defaultRangedCard())) {
         dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultRangedCard())));
-      } else if(cpuHand.contains(Cards.defaultCurseCard())) {
+      } else if(cpuHand.contains(Cards.defaultShieldCard()) && _isEnough(Cards.defaultShieldCard())) {
+        dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultShieldCard())));
+      } else if(cpuHand.contains(Cards.defaultCurseCard()) && _isEnough(Cards.defaultCurseCard())) {
         dropCard(cpuHand.removeAt(cpuHand.indexOf(Cards.defaultCurseCard())));
       }
-
     }
 
     endTurn();
+  }
+
+  bool _isEnough(Cards card) {
+    bool tmp;
+    switch(card.costType) {
+
+      case Cost.initiative:
+        tmp = current.initiative >=card.costCount;
+        break;
+      case Cost.health:
+        tmp = current.getHealth() >= (current.getHealth() * 0.2);
+        break;
+      case Cost.noCost:
+        tmp = true;
+        break;
+    }
+
+    return tmp;
   }
 }
 

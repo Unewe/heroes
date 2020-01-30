@@ -43,10 +43,10 @@ class BottomBlock extends Component {
     thirdX = w/2 + h * 0.025;
     fourthX = w/2 + width + h * 0.05 + h * 0.025;
 
-    firstRect = firstRectBg =  Rect.fromLTWH(firstX, firstY, width, h * 0.9);
-    secondRect = secondRectBg = Rect.fromLTWH(secondX, secondY, width, h * 0.9);
-    thirdRect = thirdRectBg = Rect.fromLTWH(thirdX, thirdY, width, h * 0.9);
-    fourthRect = fourthRectBg = Rect.fromLTWH(fourthX, fourthY, width, h * 0.9);
+    firstRect = firstRectBg =  Rect.fromLTWH(firstX, firstY, width, h * 0.95);
+    secondRect = secondRectBg = Rect.fromLTWH(secondX, secondY, width, h * 0.95);
+    thirdRect = thirdRectBg = Rect.fromLTWH(thirdX, thirdY, width, h * 0.95);
+    fourthRect = fourthRectBg = Rect.fromLTWH(fourthX, fourthY, width, h * 0.95);
     currentCards = drawCards();
     initCards();
   }
@@ -197,23 +197,25 @@ class BottomBlock extends Component {
   }
   onEnd(DragEndDetails details) {
     if(selected != null) {
-      if(dragYPosition < y) {
+      bool haveCost = false;
+      if(currentCards.elementAt(selected).costType == Cost.initiative) {
+
+      }
+
+      if(dragYPosition < y && _canIUse(currentCards.elementAt(selected))) {
         /*
          *Выполняем ход!
          */
         if(selected == 0) {
           firstRect = null;
-          gameScreen.cardAction(currentCards.elementAt(0));
         } else if(selected == 1) {
           secondRect = null;
-          gameScreen.cardAction(currentCards.elementAt(1));
         } else if(selected == 2) {
           thirdRect = null;
-          gameScreen.cardAction(currentCards.elementAt(2));
         } else if(selected == 3) {
           fourthRect = null;
-          gameScreen.cardAction(currentCards.elementAt(3));
         }
+        gameScreen.cardAction(currentCards.elementAt(selected));
       } else {
         if(selected == 0) {
           firstRect = firstRectBg;
@@ -228,6 +230,13 @@ class BottomBlock extends Component {
     }
     selectedRect = null;
     selected = null;
+  }
+
+  bool _canIUse(Cards card) {
+    bool tmp;
+    tmp = card.costType != Cost.initiative ||
+        gameScreen.gameLogic.current.initiative >= card.costCount;
+    return tmp;
   }
 
   List<Cards> drawCards() {
@@ -276,7 +285,7 @@ class CardTextBox extends TextBoxComponent {
 
   CardTextBox(String text, this.rect)
       : super(text,
-      config: TextConfig(fontSize: 10.0, fontFamily: 'Awesome Font', color: Colors.white), boxConfig: TextBoxConfig(maxWidth: rect.width, margin: 15));
+      config: TextConfig(fontSize: 10.0, fontFamily: 'Awesome Font', color: Colors.white), boxConfig: TextBoxConfig(maxWidth: rect.width, margin: 10));
 
   @override
   void drawBackground(Canvas c) {
