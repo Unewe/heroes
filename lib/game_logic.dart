@@ -18,13 +18,16 @@ class GameLogic {
     leftPlayer.setGameLogic(this);
     rightPlayer.setGameLogic(this);
 
-    int r = random.nextInt(1);
+    int r = random.nextInt(2);
+
     if (r == 0) {
       current = leftPlayer;
       opponent = rightPlayer;
+      current.initiative = 1;
     } else {
       current = rightPlayer;
       opponent = leftPlayer;
+      current.initiative = 1;
     }
   }
 
@@ -53,7 +56,7 @@ class GameLogic {
       case Features.meleeDefault:
         if(current.getImprovements().length > 0) {
           current.getImprovements().forEach((improvement) =>
-            dmg = dmg + (dmg * improvement.dmgHigh).round()
+            dmg += (dmg * improvement.chance).round()
           );
         }
         current._improvements.clear();
@@ -62,7 +65,7 @@ class GameLogic {
       case Features.rangedDefault:
         if(current.getImprovements().length > 0) {
           current.getImprovements().forEach((improvement) =>
-          dmg = dmg + (dmg * improvement.dmgHigh).round()
+          dmg += (dmg * improvement.chance).round()
           );
         }
         current._improvements.clear();
@@ -80,23 +83,26 @@ class GameLogic {
               .replaceRange(0, 1, List.of([current.currentTurnCards.elementAt(rndIndex)]));
           this.current.currentTurnCards.removeAt(rndIndex);
           this.gameScreen.bottomBlock.firstRect = this.gameScreen.bottomBlock.firstRectBg;
+          this.gameScreen.bottomBlock.initCards(0);
         } else if (this.gameScreen.bottomBlock.secondRect == null) {
           this.gameScreen.bottomBlock.currentCards
               .replaceRange(1, 2, List.of([current.currentTurnCards.elementAt(rndIndex)]));
           this.current.currentTurnCards.removeAt(rndIndex);
           this.gameScreen.bottomBlock.secondRect = this.gameScreen.bottomBlock.secondRectBg;
+          this.gameScreen.bottomBlock.initCards(1);
         } else if (this.gameScreen.bottomBlock.thirdRect == null) {
           this.gameScreen.bottomBlock.currentCards
               .replaceRange(2, 3, List.of([current.currentTurnCards.elementAt(rndIndex)]));
           this.current.currentTurnCards.removeAt(rndIndex);
           this.gameScreen.bottomBlock.thirdRect = this.gameScreen.bottomBlock.thirdRectBg;
+          this.gameScreen.bottomBlock.initCards(2);
         } else if (this.gameScreen.bottomBlock.fourthRect == null) {
           this.gameScreen.bottomBlock.currentCards
               .replaceRange(3, 4, List.of([current.currentTurnCards.elementAt(rndIndex)]));
           this.current.currentTurnCards.removeAt(rndIndex);
           this.gameScreen.bottomBlock.fourthRect = this.gameScreen.bottomBlock.fourthRectBg;
+          this.gameScreen.bottomBlock.initCards(3);
         }
-        this.gameScreen.bottomBlock.initCards();
         break;
       case Features.curseDefault:
         opponent.cards.add(Cards.simpleCurse());
@@ -108,7 +114,18 @@ class GameLogic {
       case Features.improvementDefault:
         current.addImprovement(card);
         break;
+      case Features.lastBreathDefault:
+        int dmg = 0;
+        for(Cards c in opponent.cards) {
+          if(c.feature == Features.simpleCurse) {
+            dmg += card.dmgHigh;
+          }
+        }
+        opponent.hit(dmg);
+        break;
     }
+
+    this.gameScreen.bottomBlock.initAllCardsText();
 
     if(leftPlayer.getHealth() <= 0 && rightPlayer.getHealth() <= 0) {
       draw();
@@ -140,8 +157,7 @@ class GameLogic {
   }
 
   endGame(Player player) {
-    print("Игрок ${player.name} проиграл!");
-    gameScreen.game.toScreen(HomeScreen(gameScreen.game));
+    gameScreen.game.toScreen(EndGameScreen(this.gameScreen.game, leftPlayer, leftPlayer != player));
   }
 
   draw() {
@@ -154,12 +170,13 @@ class GameLogic {
 
   cpuTurn() {
     List<Cards> cpuHand = List();
+
     for(int i = 0; i < 5; i++) {
       int value = random.nextInt(current.currentTurnCards.length);
       cpuHand.add(current.currentTurnCards.elementAt(value));
       current.currentTurnCards.removeAt(value);
     }
-    print(cpuHand.toString());
+
     for(int i = 0; i <= 5; i++) {
       
       if(cpuHand.contains(Cards.simpleCurse()) && _isEnough(Cards.simpleCurse())) {
@@ -214,6 +231,7 @@ class Player {
 
   List<Cards> cards;
   List<Cards> currentTurnCards;
+  Cards lastBreathCard;
 
   Player(this.name, this.playerClass) {
     switch (playerClass) {
@@ -223,6 +241,8 @@ class Player {
         this.initiative = 2;
         this._shield = 0;
         this.cards = Cards.getDefaultCollection();
+        this.currentTurnCards = Cards.getDefaultCollection();
+        this.lastBreathCard = Cards.defaultLastBreathCard();
         break;
       case PlayerClass.KNIGHT:
         this._health = 70;
@@ -230,6 +250,8 @@ class Player {
         this.initiative = 2;
         this._shield = 0;
         this.cards = Cards.getDefaultCollection();
+        this.currentTurnCards = Cards.getDefaultCollection();
+        this.lastBreathCard = Cards.defaultLastBreathCard();
         break;
       case PlayerClass.ARCHER:
         this._health = 60;
@@ -237,6 +259,8 @@ class Player {
         this.initiative = 2;
         this._shield = 0;
         this.cards = Cards.getDefaultCollection();
+        this.currentTurnCards = Cards.getDefaultCollection();
+        this.lastBreathCard = Cards.defaultLastBreathCard();
         break;
     }
   }

@@ -28,10 +28,13 @@ class BottomBlock extends Component {
 
   Rect selectedRect;
   var selectedX, selectedY, toChangeX, toChangeY, selected;
-
   var dragYPosition;
+  bool isGameJustStarted = true;
 
   CardTextBox firstTextBox, secondTextBox, thirdTextBox, fourthTextBox;
+
+  Paint paint = Paint()..color = Color.fromRGBO(102, 59, 147, 1);
+  Paint paintBg = Paint()..color = Colors.black26;
 
   BottomBlock(this.gameScreen, this.x, this.y, this.w, this.h) {
     firstY = secondY = thirdY = fourthY = y;
@@ -43,20 +46,45 @@ class BottomBlock extends Component {
     thirdX = w/2 + h * 0.025;
     fourthX = w/2 + width + h * 0.05 + h * 0.025;
 
-    firstRect = firstRectBg =  Rect.fromLTWH(firstX, firstY, width, h * 0.95);
-    secondRect = secondRectBg = Rect.fromLTWH(secondX, secondY, width, h * 0.95);
-    thirdRect = thirdRectBg = Rect.fromLTWH(thirdX, thirdY, width, h * 0.95);
-    fourthRect = fourthRectBg = Rect.fromLTWH(fourthX, fourthY, width, h * 0.95);
-    currentCards = drawCards();
-    initCards();
+    firstRectBg =  Rect.fromLTWH(firstX, firstY, width, h * 0.95);
+    secondRectBg = Rect.fromLTWH(secondX, secondY, width, h * 0.95);
+    thirdRectBg = Rect.fromLTWH(thirdX, thirdY, width, h * 0.95);
+    fourthRectBg = Rect.fromLTWH(fourthX, fourthY, width, h * 0.95);
+    initCardsFully();
   }
 
-  initCards() {
+  initCards(int index) {
+    if(index == 0) firstTextBox = CardTextBox(currentCards.elementAt(0).getDescription(gameScreen.gameLogic.leftPlayer), firstRect);
+    if(index == 1) secondTextBox = CardTextBox(currentCards.elementAt(1).getDescription(gameScreen.gameLogic.leftPlayer), secondRect);
+    if(index == 2) thirdTextBox = CardTextBox(currentCards.elementAt(2).getDescription(gameScreen.gameLogic.leftPlayer), thirdRect);
+    if(index == 3) fourthTextBox = CardTextBox(currentCards.elementAt(3).getDescription(gameScreen.gameLogic.leftPlayer), fourthRect);
+  }
 
-    if(firstRect != null) firstTextBox = CardTextBox(currentCards.elementAt(0).getDescription(), firstRect);
-    if(secondRect != null) secondTextBox = CardTextBox(currentCards.elementAt(1).getDescription(), secondRect);
-    if(thirdRect != null) thirdTextBox = CardTextBox(currentCards.elementAt(2).getDescription(), thirdRect);
-    if(fourthRect != null) fourthTextBox = CardTextBox(currentCards.elementAt(3).getDescription(), fourthRect);
+  initAllCardsText() async {
+    if (firstRect != null && _needToRedraw(currentCards.elementAt(0)) && _isTextEqual(firstTextBox, currentCards.elementAt(0)) )
+      firstTextBox = CardTextBox(currentCards.elementAt(0).getDescription(
+          gameScreen.gameLogic.leftPlayer), firstRect);
+    if (secondRect != null && _needToRedraw(currentCards.elementAt(1)) && _isTextEqual(secondTextBox, currentCards.elementAt(1)))
+      secondTextBox = CardTextBox(currentCards.elementAt(1).getDescription(
+          gameScreen.gameLogic.leftPlayer), secondRect);
+    if (thirdRect != null && _needToRedraw(currentCards.elementAt(2)) && _isTextEqual(thirdTextBox, currentCards.elementAt(2)))
+      thirdTextBox = CardTextBox(currentCards.elementAt(2).getDescription(
+          gameScreen.gameLogic.leftPlayer), thirdRect);
+    if (fourthRect != null && _needToRedraw(currentCards.elementAt(3)) && _isTextEqual(fourthTextBox, currentCards.elementAt(3)))
+      fourthTextBox = CardTextBox(currentCards.elementAt(3).getDescription(
+          gameScreen.gameLogic.leftPlayer), fourthRect);
+
+  }
+
+  bool _needToRedraw(Cards card) {
+    return card.feature == Features.meleeDefault ||
+        card.feature == Features.rangedDefault ||
+        card.feature == Features.shieldDefault;
+  }
+
+  bool _isTextEqual(TextBoxComponent textBox, Cards card) {
+    return textBox.text !=  card.getDescription(
+        gameScreen.gameLogic.leftPlayer);
   }
 
   initCardsFully() {
@@ -65,67 +93,70 @@ class BottomBlock extends Component {
     thirdRect = thirdRectBg;
     fourthRect = fourthRectBg;
     currentCards = drawCards();
-    initCards();
+    firstTextBox = CardTextBox(currentCards.elementAt(0).getDescription(gameScreen.gameLogic.leftPlayer), firstRect);
+    secondTextBox = CardTextBox(currentCards.elementAt(1).getDescription(gameScreen.gameLogic.leftPlayer), secondRect);
+    thirdTextBox = CardTextBox(currentCards.elementAt(2).getDescription(gameScreen.gameLogic.leftPlayer), thirdRect);
+    fourthTextBox = CardTextBox(currentCards.elementAt(3).getDescription(gameScreen.gameLogic.leftPlayer), fourthRect);
   }
 
   @override
-  void render(Canvas c) {
-    Paint paint = Paint()..color = Colors.deepPurpleAccent;
-    Paint paintBg = Paint()..color = Colors.black26;
+  void render(Canvas c) async {
 
     c.drawRRect(RRect.fromRectAndRadius(firstRectBg, Radius.circular(10)), paintBg);
-
     c.drawRRect(RRect.fromRectAndRadius(secondRectBg, Radius.circular(10)), paintBg);
     c.drawRRect(RRect.fromRectAndRadius(thirdRectBg, Radius.circular(10)), paintBg);
     c.drawRRect(RRect.fromRectAndRadius(fourthRectBg, Radius.circular(10)), paintBg);
+    if(isGameJustStarted && this.gameScreen.gameLogic.leftPlayer == this.gameScreen.gameLogic.current) {
+      if(firstRect != null) c.drawRRect(RRect.fromRectAndRadius(firstRect, Radius.circular(10)), paint);
+      if(secondRect != null) c.drawRRect(RRect.fromRectAndRadius(secondRect, Radius.circular(10)), paint);
+      if(thirdRect != null) c.drawRRect(RRect.fromRectAndRadius(thirdRect, Radius.circular(10)), paint);
+      if(fourthRect != null) c.drawRRect(RRect.fromRectAndRadius(fourthRect, Radius.circular(10)), paint);
 
-    if(firstRect != null) c.drawRRect(RRect.fromRectAndRadius(firstRect, Radius.circular(10)), paint);
-    if(secondRect != null) c.drawRRect(RRect.fromRectAndRadius(secondRect, Radius.circular(10)), paint);
-    if(thirdRect != null) c.drawRRect(RRect.fromRectAndRadius(thirdRect, Radius.circular(10)), paint);
-    if(fourthRect != null) c.drawRRect(RRect.fromRectAndRadius(fourthRect, Radius.circular(10)), paint);
+      if(firstRect != null) {
+        firstTextBox
+          ..anchor = Anchor.topLeft
+          ..x = firstRect.topLeft.dx
+          ..y = firstRect.topLeft.dy
+          ..update(0)
+          ..render(c);
+        c.translate(-firstRect.topLeft.dx,
+            -firstRect.topLeft.dy);
+      }
 
-    if(firstRect != null) {
-      firstTextBox
-        ..anchor = Anchor.topLeft
-        ..x = firstRect.topLeft.dx
-        ..y = firstRect.topLeft.dy
-        ..update(0)
-        ..render(c);
-      c.translate(-firstRect.topLeft.dx,
-          -firstRect.topLeft.dy);
-    }
+      if(secondRect != null) {
+        secondTextBox
+          ..anchor = Anchor.topLeft
+          ..x = secondRect.topLeft.dx
+          ..y = secondRect.topLeft.dy
+          ..update(0)
+          ..render(c);
+        c.translate(-secondRect.topLeft.dx,
+            -secondRect.topLeft.dy);
+      }
 
-    if(secondRect != null) {
-      secondTextBox
-        ..anchor = Anchor.topLeft
-        ..x = secondRect.topLeft.dx
-        ..y = secondRect.topLeft.dy
-        ..update(0)
-        ..render(c);
-      c.translate(-secondRect.topLeft.dx,
-          -secondRect.topLeft.dy);
-    }
+      if(thirdRect != null) {
+        thirdTextBox
+          ..anchor = Anchor.topLeft
+          ..x = thirdRect.topLeft.dx
+          ..y = thirdRect.topLeft.dy
+          ..update(0)
+          ..render(c);
+        c.translate(-thirdRect.topLeft.dx,
+            -thirdRect.topLeft.dy);
+      }
 
-    if(thirdRect != null) {
-      thirdTextBox
-        ..anchor = Anchor.topLeft
-        ..x = thirdRect.topLeft.dx
-        ..y = thirdRect.topLeft.dy
-        ..update(0)
-        ..render(c);
-      c.translate(-thirdRect.topLeft.dx,
-          -thirdRect.topLeft.dy);
-    }
-
-    if(fourthRect != null) {
-      fourthTextBox
-        ..anchor = Anchor.topLeft
-        ..x = fourthRect.topLeft.dx
-        ..y = fourthRect.topLeft.dy
-        ..update(0)
-        ..render(c);
-      c.translate(-fourthRect.topLeft.dx,
-          -fourthRect.topLeft.dy);
+      if(fourthRect != null) {
+        fourthTextBox
+          ..anchor = Anchor.topLeft
+          ..x = fourthRect.topLeft.dx
+          ..y = fourthRect.topLeft.dy
+          ..update(0)
+          ..render(c);
+        c.translate(-fourthRect.topLeft.dx,
+            -fourthRect.topLeft.dy);
+      }
+    } else {
+     this.gameScreen.gameLogic.cpuTurn();
     }
   }
 
@@ -197,11 +228,6 @@ class BottomBlock extends Component {
   }
   onEnd(DragEndDetails details) {
     if(selected != null) {
-      bool haveCost = false;
-      if(currentCards.elementAt(selected).costType == Cost.initiative) {
-
-      }
-
       if(dragYPosition < y && _canIUse(currentCards.elementAt(selected))) {
         /*
          *Выполняем ход!
@@ -235,17 +261,17 @@ class BottomBlock extends Component {
   bool _canIUse(Cards card) {
     bool tmp;
     tmp = card.costType != Cost.initiative ||
-        gameScreen.gameLogic.current.initiative >= card.costCount;
+        gameScreen.gameLogic.leftPlayer.initiative >= card.costCount;
     return tmp;
   }
 
   List<Cards> drawCards() {
-    this.gameScreen.gameLogic.current.currentTurnCards = List.of(this.gameScreen.gameLogic.current.cards);
+    this.gameScreen.gameLogic.leftPlayer.currentTurnCards = List.of(this.gameScreen.gameLogic.current.cards);
     List<Cards> list = List();
     for(int i = 0; i < 5; i++) {
-      int value = random.nextInt(this.gameScreen.gameLogic.current.currentTurnCards.length);
-      list.add(this.gameScreen.gameLogic.current.currentTurnCards.elementAt(value));
-      this.gameScreen.gameLogic.current.currentTurnCards.removeAt(value);
+      int value = random.nextInt(this.gameScreen.gameLogic.leftPlayer.currentTurnCards.length);
+      list.add(this.gameScreen.gameLogic.leftPlayer.currentTurnCards.elementAt(value));
+      this.gameScreen.gameLogic.leftPlayer.currentTurnCards.removeAt(value);
     }
     return list;
   }
@@ -265,7 +291,7 @@ class PlayerView extends PositionComponent {
 
 class CardItem {
 
-  Paint paint = Paint()..color = Colors.deepPurpleAccent;
+  Paint paint = Paint()..color = Color.fromRGBO(34, 42, 92, 1);
   Paint paintBg = Paint()..color = Colors.black26;
   Rect bgRect;
   Rect cardRect;

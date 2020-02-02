@@ -1,3 +1,5 @@
+import 'package:madlegend/game_logic.dart';
+
 class Cards {
   int id;
   String name;
@@ -8,13 +10,28 @@ class Cards {
   Cost costType;
   int costCount;
 
-  String getDescription() {
+  String getDescription(Player player) {
     switch (feature) {
       case Features.meleeDefault:
-        return "Наносит ${(this.dmgLow).floor()} - ${(this.dmgHigh).floor()} урона";
+        double dmgLowTmp = this.dmgLow.toDouble();
+        double dmgHighTmp = this.dmgHigh.toDouble();
+        if(player.getImprovements().isNotEmpty) {
+          for(Cards improvement in player.getImprovements()) {
+            dmgHighTmp +=  dmgHighTmp * improvement.chance;
+            dmgLowTmp += dmgLowTmp * improvement.chance;
+          }
+        }
+        return "Наносит ${(dmgLowTmp).floor()} - ${(dmgHighTmp).floor()} урона";
       case Features.rangedDefault:
-        return "С верояьностью ${(this.chance * 100).floor()}% нанесет ${(this.dmgLow).floor()} урона.";
+        double dmgLowTmp = this.dmgLow.toDouble();
+        if(player.getImprovements().isNotEmpty) {
+          for(Cards improvement in player.getImprovements()) {
+            dmgLowTmp += dmgLowTmp * improvement.chance;
+          }
+        }
+        return "С верояьностью ${(this.chance * 100).floor()}% нанесет ${(dmgLowTmp).floor()} урона.";
       case Features.shieldDefault:
+        //Может и щит улучшить
         return "Вы получите ${(this.dmgLow).floor()} брони.";
       case Features.prepareDefault:
         return "Вы получите 1 очко инициативы, и 1 карту на выбор.";
@@ -22,10 +39,10 @@ class Cards {
         return "Добавляет 2 карты проклятия в колоду противника.";
       case Features.simpleCurse:
         return "Жалкое проклятие. Просто выбросите и играйте дальше";
-
       case Features.improvementDefault:
         return "Ваша следующая атака улучшена на ${(this.chance * 100).floor()}%";
-      default: return "";
+      case Features.lastBreathDefault:
+        return "Наносит ${this.dmgHigh}, за каждое проклятие в колоде противника";
     }
   }
 
@@ -70,6 +87,10 @@ class Cards {
     return Cards(6, "Улучшение", 0.5, 1, 1, Features.improvementDefault, Cost.health, 3);
   }
 
+  static Cards defaultLastBreathCard() {
+    return Cards(7, "Последний вздох", 1, 2, 2, Features.improvementDefault, Cost.noCost, 0);
+  }
+
   @override
   String toString() {
     return 'Cards{name: $name}';
@@ -97,7 +118,8 @@ enum Features {
   curseDefault,
   simpleCurse,
   //Улучшение.
-  improvementDefault
+  improvementDefault,
+  lastBreathDefault
 }
 
 enum Cost {

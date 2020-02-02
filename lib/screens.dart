@@ -1,4 +1,3 @@
-
 import 'package:flame/anchor.dart';
 import 'package:flame/components/component.dart';
 import 'package:flame/components/text_component.dart';
@@ -37,9 +36,13 @@ abstract class Screen extends Component {
  */
 class HomeScreen extends Screen{
   Rect start;
+  TextComponent startText = TextComponent("Start", config: TextConfig(
+      color: Color.fromRGBO(57, 83, 192, 1),
+      fontSize: 40
+  ));
 
   HomeScreen(MyGame game) : super(game) {
-    bgPaint.color = Colors.greenAccent;
+    bgPaint.color = Color.fromRGBO(236,97,74, 1);
     start = Rect.fromLTWH(
         w - h * 0.05 - w * 0.2,
         h - h * 0.05 - h * 0.2,
@@ -49,7 +52,8 @@ class HomeScreen extends Screen{
   @override
   void render(Canvas c) {
     c.drawRect(bgRect, bgPaint);
-    c.drawRect(start, Paint()..color = Colors.deepOrange);
+    startText..setByRect(start);
+    startText.render(c);
   }
 
   @override
@@ -81,7 +85,6 @@ class GameScreen extends Screen{
 
   // Загрузка спрайтов
   bool download = true;
-
   // Персонажи
   PlayerBlock leftPlayerBlock;
   PlayerBlock rightPlayerBlock;
@@ -90,7 +93,7 @@ class GameScreen extends Screen{
 
   GameScreen(MyGame game) : super(game) {
     init();
-    bgPaint.color = Colors.teal;
+    bgPaint.color = Color.fromRGBO(69, 184, 179, 1);
     bottomBlock = BottomBlock(this, 0, h * 0.7, w, h * 0.3);
   }
 
@@ -115,17 +118,13 @@ class GameScreen extends Screen{
   @override
   void render(Canvas c) {
     if(!download) {
-      // Задний фон
       c.drawRect(bgRect, bgPaint);
-      c.drawRect(endTurnButton, Paint()..color = Colors.deepPurpleAccent);
-      // Левый игрок
+      c.drawRect(endTurnButton, Paint()..color = Color.fromRGBO(189, 31, 63, 1));
       leftPlayerBlock.render(c);
-      // Правый игрок
       rightPlayerBlock.render(c);
-      // НижнийБлок
       bottomBlock.render(c);
     } else {
-      // Нужно будет сделать экран закгрузки здесь
+      c.drawRect(bgRect, Paint()..color = Colors.pink);
     }
   }
 
@@ -141,7 +140,6 @@ class GameScreen extends Screen{
 
   cardAction(Cards card) {
     gameLogic.dropCard(card);
-    print(card.getDescription());
   }
 
   endTurn() {
@@ -197,6 +195,42 @@ class ShopScreen extends Screen{
   }
 }
 
+/*
+ * Screen for end game
+ */
+class EndGameScreen extends Screen{
+
+  Player player;
+  TextComponent textComponent;
+
+  EndGameScreen(MyGame game, this.player, win) : super(game) {
+    bgPaint = Paint()..color = Color.fromRGBO(56,0,44, 1);
+    textComponent = TextComponent( win ? "Победа" : "Поражение", config: win ? TextConfig(
+        color: Color.fromRGBO(70, 198, 87, 1),
+        fontSize: 40
+    ) : TextConfig(
+        color: Color.fromRGBO(189, 31, 63, 1),
+        fontSize: 40
+    ));
+    textComponent.setByRect(Rect.fromLTWH(w * 0.1, h * 0.1, w * 0.8, h * 0.8));
+  }
+
+  @override
+  void render(Canvas c) {
+    c.drawRect(bgRect, bgPaint);
+    textComponent.render(c);
+  }
+
+  @override
+  void update(double t) {
+    // TODO: implement update
+  }
+
+  @override
+  onTapDown(TapDownDetails details) {
+    this.game.toScreen(HomeScreen(game));
+  }
+}
 
 /*
  * playerBlock
@@ -215,6 +249,9 @@ class PlayerBlock extends PositionComponent {
   TextComponent shield;
 
   Player player;
+
+  Paint black = Paint()..color = Colors.black;
+  Paint red = Paint()..color = Colors.red;
 
   double defaultHealthLineLength;
   int previousHealth, defaultHealth;
@@ -238,10 +275,15 @@ class PlayerBlock extends PositionComponent {
       canvas.translate(screen.w, 0);
       canvas.scale(-1.0, 1.0);
     }
-
-    canvas.drawRect(healthBorder, Paint()..color = Colors.black);
-    canvas.drawRect(health, Paint()..color = Colors.red);
+    canvas.drawRect(healthBorder, black);
+    canvas.drawRect(health, red);
     sprite.renderRect(canvas, rect);
+
+    for(int i = 0; i < player.initiative; i++) {
+      canvas.drawRRect(RRect.fromRectAndRadius(
+          Rect.fromLTWH(screen.h * 0.5 - (i * screen.h * 0.06), screen.h * 0.1, screen.h * 0.03, screen.h * 0.03),
+          Radius.circular(10)), Paint()..color = Colors.red);
+    }
 
     if(rightPlayer) {
       canvas.translate(screen.w, 0);
@@ -295,5 +337,4 @@ class PlayerBlock extends PositionComponent {
     rect = upBreath ? Rect.fromLTWH(rect.left, rect.top - 0.10, rect.width, rect.height + 0.10)
         : Rect.fromLTWH(rect.left, rect.top + 0.05, rect.width, rect.height - 0.05);
   }
-
 }
